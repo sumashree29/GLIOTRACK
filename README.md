@@ -147,3 +147,35 @@ Serve `frontend/index.html` and `frontend/upload.js` from any static host
 - Intra-patient co-registration is rigid only (SimpleITK)
 - CR_provisional requires confirmatory scan ≥4 weeks for CR_confirmed
 - Dice scores require ground truth labels; set to 0.0 if unavailable
+
+  ## Screenshots
+
+### Dashboard
+![Dashboard](assets/screenshots/dashboard.png)
+
+### Upload DICOM Sequences (Empty)
+![Upload Empty](assets/screenshots/upload_empty.png)
+
+### Upload DICOM Sequences (Filled)
+![Upload Filled](assets/screenshots/upload_filled.png)
+
+### Clinical Metadata Entry
+![Clinical Metadata](assets/screenshots/clinical_metadata.png)
+
+### Pipeline Execution — 5 Agents Live
+![Pipeline Status](assets/screenshots/pipeline_status.png)
+
+### Tumour Measurements Report
+![Report Measurements](assets/screenshots/report_measurements.png)
+
+### RANO Classification & Longitudinal Trajectory
+![RANO Classification](assets/screenshots/report_rano.png)
+
+### Clinical Literature RAG Context
+![RAG Context](assets/screenshots/report_rag.png)
+
+### Generated PDF Report — Clinical Summary
+![PDF Report](assets/screenshots/pdf_report.png)
+
+### Generated PDF Report — Longitudinal Trajectory Table
+![PDF Longitudinal](assets/screenshots/pdf_longitudinal.png)
