@@ -172,7 +172,7 @@ Serve `frontend/index.html` and `frontend/upload.js` from any static host
 ![RANO Classification](report_rano.png)
 
 ### Clinical Literature RAG Context
-![RAG Context](areport_rag.png)
+![RAG Context](report_rag.png)
 
 ### Generated PDF Report — Clinical Summary
 ![PDF Report](pdf_report.png)
