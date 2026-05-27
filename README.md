@@ -154,28 +154,28 @@ Serve `frontend/index.html` and `frontend/upload.js` from any static host
 ![Dashboard](dashboard.png)
 
 ### Upload DICOM Sequences (Empty)
-![Upload Empty](assets/screenshots/upload_empty.png)
+![Upload Empty](upload_empty.png)
 
 ### Upload DICOM Sequences (Filled)
-![Upload Filled](assets/screenshots/upload_filled.png)
+![Upload Filled](upload_filled.png)
 
 ### Clinical Metadata Entry
-![Clinical Metadata](assets/screenshots/clinical_metadata.png)
+![Clinical Metadata](clinical_metadata.png)
 
 ### Pipeline Execution — 5 Agents Live
-![Pipeline Status](assets/screenshots/pipeline_status.png)
+![Pipeline Status](pipeline_status.png)
 
 ### Tumour Measurements Report
-![Report Measurements](assets/screenshots/report_measurements.png)
+![Report Measurements](report_measurements.png)
 
 ### RANO Classification & Longitudinal Trajectory
-![RANO Classification](assets/screenshots/report_rano.png)
+![RANO Classification](report_rano.png)
 
 ### Clinical Literature RAG Context
-![RAG Context](assets/screenshots/report_rag.png)
+![RAG Context](areport_rag.png)
 
 ### Generated PDF Report — Clinical Summary
-![PDF Report](assets/screenshots/pdf_report.png)
+![PDF Report](pdf_report.png)
 
 ### Generated PDF Report — Longitudinal Trajectory Table
-![PDF Longitudinal](assets/screenshots/pdf_longitudinal.png)
+![PDF Longitudinal](pdf_longitudinal.png)
