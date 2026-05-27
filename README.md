@@ -151,7 +151,7 @@ Serve `frontend/index.html` and `frontend/upload.js` from any static host
   ## Screenshots
 
 ### Dashboard
-![Dashboard](assets/screenshots/dashboard.png)
+![Dashboard](dashboard.png)
 
 ### Upload DICOM Sequences (Empty)
 ![Upload Empty](assets/screenshots/upload_empty.png)
