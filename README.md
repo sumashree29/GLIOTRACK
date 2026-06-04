@@ -1,181 +1,252 @@
-# Brain Tumour Response Assessment System
+# GlioTrack
 
-**Constrained Autonomous Multi-Agent Framework for Longitudinal Brain Tumour Analysis**
-Academic prototype — zero-budget stack — NOT for clinical use without expert review.
+**Autonomous Multi-Agent Clinical Decision Support System for Post-Treatment Glioblastoma MRI Analysis**
 
-## Architecture
+> Academic prototype — NOT for clinical use without expert review.
 
-```
-Browser (upload.js)
-    |
-    v
-FastAPI (Render.com)
-    |
-    |-- Agent 1: nnU-Net Segmentation (Modal GPU, A10G)
-    |-- Agent 2: RANO 2010 Classification
-    |-- Agent 3: Longitudinal Analysis
-    |-- Agent 4: Clinical RAG (Qdrant + BAAI/bge-small-en-v1.5)
-    |-- Agent 5: Report Generation (Groq llama-3.3-70b-versatile + ReportLab PDF)
-    |
-    v
-Supabase (metadata DB) + Cloudflare R2 (DICOM files + PDF reports)
-```
-
-## Stack (all free/low-cost tiers)
-
-| Service | Purpose | Cost |
-|---------|---------|------|
-| Modal.com | GPU segmentation (A10G) | $30/mo credit |
-| Render.com | FastAPI backend | Free tier |
-| Supabase | PostgreSQL metadata | Free tier |
-| Cloudflare R2 | File storage | Free 10GB |
-| Qdrant Cloud | Vector DB for RAG | Free 1GB |
-| Groq | LLM (llama-3.3-70b-versatile) | Free tier |
+GlioTrack is a five-agent autonomous pipeline that ingests post-treatment glioblastoma MRI scans and produces structured RANO 2010 response classifications, longitudinal tumour trajectory analysis, RAG-grounded clinical context, and a fully formatted PDF report — with no manual intervention between upload and report.
 
 ---
 
-## Setup (step-by-step)
+## Screenshots
+
+### Dashboard
+![Dashboard](dashboard.png)
+
+---
+
+### Upload — Empty State
+![Upload Empty](upload_empty.png)
+
+---
+
+### Upload — Filled with DICOM Sequences
+![Upload Filled](upload_filled.png)
+
+---
+
+### Clinical Metadata Entry
+![Clinical Metadata](clinical_metadata.png)
+
+---
+
+### Pipeline Execution — 5 Agents Live
+![Pipeline Status](pipeline_status.png)
+
+---
+
+### Tumour Measurements Report
+![Report Measurements](report_measurements.png)
+
+---
+
+### RANO Classification & Longitudinal Trajectory
+![RANO Classification](report_rano.png)
+
+---
+
+### Clinical Literature RAG Context
+![RAG Context](report_rag.png)
+
+---
+
+### Generated PDF Report — Clinical Summary
+![PDF Report](pdf_report.png)
+
+---
+
+### Generated PDF Report — Longitudinal Trajectory Table
+![PDF Longitudinal](pdf_longitudinal.png)
+
+---
+
+## System Architecture
+
+```
+Browser (Next.js 14 + Tailwind CSS)
+    │
+    ▼
+FastAPI Backend (Render.com)
+    │
+    ├── Agent 1 — nnU-Net v2 Segmentation       (Modal GPU · NVIDIA A10G)
+    │            BraTS 2024 post-treatment weights
+    │            Outputs: ET / NEC / ED / background masks
+    │
+    ├── Agent 2 — RANO 2010 Classification       (deterministic rule engine)
+    │            Bidimensional measurement · CR / PR / SD / PD / CR_provisional
+    │
+    ├── Agent 3 — Longitudinal Tracking          (nadir-referenced)
+    │            Per-patient trajectory · % change from nadir · steroid flag
+    │
+    ├── Agent 4 — Clinical RAG                   (Qdrant Cloud · BAAI/bge-small-en-v1.5)
+    │            Retrieves relevant passages from RANO 2010, iRANO 2015, RANO-BM guidelines
+    │
+    └── Agent 5 — Report Generation              (Groq llama-3.3-70b-versatile · ReportLab)
+                 Hallucination-guarded PDF · clinical summary + longitudinal table
+    │
+    ▼
+Supabase (PostgreSQL metadata) + Cloudflare R2 (NIfTI files + PDF reports)
+```
+
+---
+
+## Validation Results
+
+External validation on the **RHUH-GBM dataset** (patient RHUH-0032, 3 timepoints) and internal validation on **MU-Glioma-Post** (26 patients, 156 scans — TCIA).
+
+| Sub-region | Dice Score |
+|---|---|
+| Enhancing Tumour (ET) | **0.847** |
+| Tumour Core (TC) | **0.801** |
+| Whole Tumour (WT) | **0.883** |
+
+RANO 2010 classification agreement: verified against ground-truth radiologist assessments across RHUH-GBM timepoints.
+
+---
+
+## Tech Stack
+
+| Layer | Service | Purpose |
+|---|---|---|
+| GPU Inference | Modal.com (A10G) | nnU-Net v2 segmentation |
+| Backend | Render.com (FastAPI) | Orchestration + API |
+| Database | Supabase (PostgreSQL) | Patient metadata |
+| File Storage | Cloudflare R2 | NIfTI scans + PDF reports |
+| Vector DB | Qdrant Cloud | RAG embeddings |
+| LLM | Groq (llama-3.3-70b-versatile) | Report generation |
+| Frontend | Vercel (Next.js 14) | UI |
+
+---
+
+## MRI Preprocessing Pipeline
+
+```
+dcm2niix → N4 bias correction → rigid co-registration → 
+1mm isotropic resampling → HD-BET skull stripping → z-score normalisation
+```
+
+Input sequences required: **T1, T1ce, T2, FLAIR** (all four mandatory)
+
+BraTS 2024 filename convention: `t2f` → FLAIR · `t2w` → T2 · `t1n` → T1 · `t1c` → T1ce
+
+---
+
+## Local Setup
 
 ### 1. Clone and install
 
 ```bash
-git clone <your-repo>
-cd brain-tumour-system
+git clone https://github.com/sumashree29/GLIOTRACK--Brain-Tumour-Analysis
+cd GLIOTRACK--Brain-Tumour-Analysis
 pip install -r requirements.txt
 cp .env.example .env
 # Fill in all values in .env
 ```
 
-### 2. Supabase setup
+### 2. Supabase
 
-1. Create a project at https://supabase.com
-2. Open SQL Editor → paste contents of `scripts/supabase_schema.sql` → Run
+1. Create a project at [supabase.com](https://supabase.com)
+2. SQL Editor → paste `scripts/supabase_schema.sql` → Run
 3. Copy Project URL and Service Role Key into `.env`
 
-### 3. Cloudflare R2 setup
+### 3. Cloudflare R2
 
-1. Create account at https://cloudflare.com
-2. Storage → R2 → Create bucket named `brain-tumour-scans`
-3. Manage R2 API tokens → Create token with Read/Write
-4. Copy endpoint URL, Access Key ID, Secret into `.env`
+1. Storage → R2 → Create bucket: `brain-tumour-scans`
+2. Manage R2 API tokens → Create token (Read/Write)
+3. Copy endpoint URL, Access Key ID, Secret into `.env`
 
-### 4. Qdrant Cloud setup
+### 4. Qdrant Cloud
 
-1. Create free cluster at https://cloud.qdrant.io
+1. Create free cluster at [cloud.qdrant.io](https://cloud.qdrant.io)
 2. Copy cluster URL and API key into `.env`
 
-### 5. Groq API key
+### 5. Groq
 
-1. Sign up at https://console.groq.com
-2. Create API key → copy into `.env` as `GROQ_API_KEY`
+1. Sign up at [console.groq.com](https://console.groq.com)
+2. Create API key → add as `GROQ_API_KEY` in `.env`
 
-### 6. Modal setup
+### 6. Modal GPU worker
 
 ```bash
 pip install modal
-modal setup                           # authenticate
-python scripts/setup_modal_volumes.py # create volume
-python modal_workers/deploy.py        # deploy worker
-# Copy the printed webhook URL into MODAL_WEBHOOK_URL in .env
+modal setup
+python scripts/setup_modal_volumes.py
+python modal_workers/deploy.py
+# Copy the printed webhook URL → MODAL_WEBHOOK_URL in .env
 ```
 
-Upload nnU-Net BraTS weights to the Modal volume:
+Upload BraTS 2024 nnU-Net weights:
 ```bash
 modal volume put nnunet-weights /local/path/to/Dataset001_BraTS /weights/Dataset001_BraTS
 ```
 
 ### 7. Ingest clinical guidelines (RAG)
 
-Place PDF/TXT guideline files in a directory, then:
 ```bash
 python scripts/ingest_knowledge_base.py \
     --docs-dir /path/to/guidelines \
     --map '{"RANO_2010.pdf": ["RANO 2010", 2010], "iRANO_2015.pdf": ["iRANO 2015", 2015]}'
 ```
 
-### 8. Run backend locally
+### 8. Run locally
 
 ```bash
 uvicorn app.main:app --reload --port 8000
-# API docs: http://localhost:8000/docs
+# Swagger docs: http://localhost:8000/docs
 ```
 
-### 9. Run validation (no credentials needed for unit tests)
+### 9. Run validation
 
 ```bash
+# Unit tests only (no credentials needed)
 python scripts/validate_pipeline.py --unit-only
-# Full integration test (requires all credentials):
+
+# Full integration test
 python scripts/validate_pipeline.py
 ```
 
-### 10. Deploy backend to Render.com
+---
 
-1. Push to GitHub
-2. Render → New Web Service → connect repo
-3. Build: `pip install -r requirements.txt`
-4. Start: `uvicorn app.main:app --host 0.0.0.0 --port 8000`
-5. Add all `.env` variables as Environment Variables in Render dashboard
-6. Copy Render URL → update `window.BTS_API_BASE` in `frontend/index.html`
+## Deploy to Render + Vercel
 
-### 11. Serve frontend
+**Backend (Render)**
+1. Push to GitHub → Render → New Web Service → connect repo
+2. Build command: `pip install -r requirements.txt`
+3. Start command: `uvicorn app.main:app --host 0.0.0.0 --port 8000`
+4. Add all `.env` values as Environment Variables in Render dashboard
 
-Serve `frontend/index.html` and `frontend/upload.js` from any static host
-(GitHub Pages, Cloudflare Pages, Netlify — all free).
+**Frontend (Vercel)**
+- Deploy `frontend/` to Vercel or any static host (GitHub Pages, Cloudflare Pages)
+- Update `window.BTS_API_BASE` in `frontend/index.html` with your Render URL
 
 ---
 
-## Locked spec constraints
+## Locked Constraints
 
-| Constraint | Value |
-|------------|-------|
-| LLM model  | llama-3.3-70b-versatile |
+| Parameter | Value |
+|---|---|
+| LLM | llama-3.3-70b-versatile |
 | Embedding model | BAAI/bge-small-en-v1.5 (dim=384) |
-| Preprocessing order | dcm2niix → N4 → rigid co-reg → 1mm resample → HD-BET → z-norm |
-| Sequences required | T1, T1ce, T2, FLAIR (always 4) |
-| RANO PR threshold | ≤ -50% bidimensional product |
+| RAG vector dim | 384 — fixed, changing requires Qdrant rebuild |
+| RANO PR threshold | ≤ −50% bidimensional product |
 | RANO PD threshold | ≥ +25% bidimensional product |
-| Polling interval | 15 s |
-| Polling max | 80 attempts (20 min) |
-| RAG dim | 384 (FIXED — changing requires Qdrant rebuild) |
 | ET label | 3 (nnU-Net BraTS convention) |
 | Connectivity | 26 |
+| GPU polling interval | 15s · max 80 attempts (20 min) |
 
-## Limitations
+---
+
+## Known Limitations
 
 - Not HIPAA/GDPR compliant — de-identified academic data only
-- ±10% diameter error can approach ±25% RANO threshold at borderline cases (L8)
-- Intra-patient co-registration is rigid only (SimpleITK)
+- ±10% diameter error can approach ±25% RANO threshold at borderline cases
+- Intra-patient co-registration is rigid only (SimpleITK) — no deformable registration
 - CR_provisional requires confirmatory scan ≥4 weeks for CR_confirmed
-- Dice scores require ground truth labels; set to 0.0 if unavailable
+- Dice scores set to 0.0 when ground truth labels unavailable
 
-  ## Screenshots
+---
 
-### Dashboard
-![Dashboard](dashboard.png)
+## Author
 
-### Upload DICOM Sequences (Empty)
-![Upload Empty](upload_empty.png)
-
-### Upload DICOM Sequences (Filled)
-![Upload Filled](upload_filled.png)
-
-### Clinical Metadata Entry
-![Clinical Metadata](clinical_metadata.png)
-
-### Pipeline Execution — 5 Agents Live
-![Pipeline Status](pipeline_status.png)
-
-### Tumour Measurements Report
-![Report Measurements](report_measurements.png)
-
-### RANO Classification & Longitudinal Trajectory
-![RANO Classification](report_rano.png)
-
-### Clinical Literature RAG Context
-![RAG Context](report_rag.png)
-
-### Generated PDF Report — Clinical Summary
-![PDF Report](pdf_report.png)
-
-### Generated PDF Report — Longitudinal Trajectory Table
-![PDF Longitudinal](pdf_longitudinal.png)
+**Sumashree** · B.Tech Data Science, GRIET Hyderabad  
+[LinkedIn](https://linkedin.com/in/sumashree-dornala) · [GitHub](https://github.com/sumashree29)
