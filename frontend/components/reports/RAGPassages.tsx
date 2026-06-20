@@ -7,12 +7,28 @@ import { FLAG_MESSAGES } from "@/lib/constants";
 import type { Agent4Output, RAGPassage } from "@/types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-// RAGPassage extended with backend-generated bullets
+
 interface EnrichedPassage extends RAGPassage {
   bullets?: string[];
 }
 
+// ── Derive fallback bullets from passage_text when backend didn't provide them ─
+
+function deriveFallbackBullets(text: string): string[] {
+  if (!text || text.trim().length === 0) return [];
+
+  // Split into sentences, filter to meaningful clinical ones, take first 3
+  const sentences = text
+    .replace(/\n+/g, " ")
+    .split(/(?<=[.!?])\s+/)
+    .map(s => s.trim())
+    .filter(s => s.length > 40 && s.length < 300); // skip fragments and very long ones
+
+  return sentences.slice(0, 3);
+}
+
 // ── Raw passage text with expand toggle ───────────────────────────────────────
+
 function RawPassage({ text }: { text: string }) {
   const [showFull, setShowFull] = useState(false);
   const preview = text.slice(0, 300).trim();
@@ -50,6 +66,7 @@ function RawPassage({ text }: { text: string }) {
 }
 
 // ── Single passage card ───────────────────────────────────────────────────────
+
 function PassageCard({ passage, index }: { passage: EnrichedPassage; index: number }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -58,7 +75,12 @@ function PassageCard({ passage, index }: { passage: EnrichedPassage; index: numb
     passage.relevance_score >= 0.6 ? "var(--amber)" :
     "var(--muted)";
 
-  const bullets = passage.bullets ?? [];
+  // FIX: use backend bullets if present and non-empty,
+  // otherwise derive fallback bullets from the passage text
+  const bullets =
+    passage.bullets && passage.bullets.length > 0
+      ? passage.bullets
+      : deriveFallbackBullets(passage.passage_text);
 
   return (
     <div
@@ -106,7 +128,7 @@ function PassageCard({ passage, index }: { passage: EnrichedPassage; index: numb
               </span>
             </div>
 
-            {/* Bullet preview — show first bullet collapsed */}
+            {/* Bullet preview — always show first bullet collapsed */}
             {!expanded && bullets.length > 0 && (
               <p
                 className="text-[11px] mt-1.5 leading-relaxed line-clamp-2"
@@ -176,6 +198,7 @@ function PassageCard({ passage, index }: { passage: EnrichedPassage; index: numb
 }
 
 // ── Main export ───────────────────────────────────────────────────────────────
+
 export default function RAGPassages({ agent4 }: { agent4: Agent4Output | null }) {
   if (!agent4 || !agent4.rag_available || agent4.passages.length === 0) {
     return (

@@ -301,10 +301,10 @@ def _validate_nifti_outputs(nifti_dir: Path) -> None:
 # ─────────────────────────────────────────────────────────────────────────────
 
 _FILENAME_KEYWORDS = [
-    (["t1ce", "t1c", "t1gd", "t1_ce", "t1+c", "gd", "gadolinium", "contrast", "t1c"], "T1ce"),
-    (["flair", "t2_flair", "t2flair", "t2f"],                                          "FLAIR"),
-    (["t2w", "t2"],                                                                     "T2"),
-    (["t1n", "t1"],                                                                     "T1"),
+    (["t1ce", "t1c", "t1gd", "t1_ce", "t1+c", "gd", "gadolinium", "contrast", "t1c", "ct1", "ct1_skull"], "T1ce"),
+    (["flair", "t2_flair", "t2flair", "t2f"], "FLAIR"),
+    (["t2w", "t2"], "T2"),
+    (["t1n", "t1"], "T1"),
 ]
 _SERIES_DESC_KEYWORDS = _FILENAME_KEYWORDS
 

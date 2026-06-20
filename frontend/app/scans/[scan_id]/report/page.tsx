@@ -384,8 +384,9 @@ export default function ReportPage() {
                       data={(() => {
                         if (!agent3 || !Array.isArray(agent3.scan_dates)) return [];
                         return agent3.scan_dates.map((date, i) => {
-                          const intervals = Array.isArray(agent3.trajectory_intervals)
-                            ? agent3.trajectory_intervals : [];
+                          const intervals: { bp_start: number; bp_end: number; label?: string }[] =
+                            Array.isArray(agent3.trajectory_intervals)
+                              ? agent3.trajectory_intervals : [];
                           const bp = i === 0
                             ? (intervals[0]?.bp_start ?? 0)
                             : (intervals[i - 1]?.bp_end ?? 0);
