@@ -8,58 +8,6 @@ GlioTrack is a five-agent autonomous pipeline that ingests post-treatment gliobl
 
 ---
 
-## Screenshots
-
-### Dashboard
-![Dashboard](dashboard.png)
-
----
-
-### Upload — Empty State
-![Upload Empty](upload_empty.png)
-
----
-
-### Upload — Filled with DICOM Sequences
-![Upload Filled](upload_filled.png)
-
----
-
-### Clinical Metadata Entry
-![Clinical Metadata](clinical_metadata.png)
-
----
-
-### Pipeline Execution — 5 Agents Live
-![Pipeline Status](pipeline_status.png)
-
----
-
-### Tumour Measurements Report
-![Report Measurements](report_measurements.png)
-
----
-
-### RANO Classification & Longitudinal Trajectory
-![RANO Classification](report_rano.png)
-
----
-
-### Clinical Literature RAG Context
-![RAG Context](report_rag.png)
-
----
-
-### Generated PDF Report — Clinical Summary
-![PDF Report](pdf_report.png)
-
----
-
-### Generated PDF Report — Longitudinal Trajectory Table
-![PDF Longitudinal](pdf_longitudinal.png)
-
----
-
 ## System Architecture
 
 ```
@@ -243,6 +191,59 @@ python scripts/validate_pipeline.py
 - Intra-patient co-registration is rigid only (SimpleITK) — no deformable registration
 - CR_provisional requires confirmatory scan ≥4 weeks for CR_confirmed
 - Dice scores set to 0.0 when ground truth labels unavailable
+
+---
+
+## Screenshots
+
+### Dashboard
+![Dashboard](dashboard.png)
+
+---
+
+### Upload — Empty State
+![Upload Empty](upload_empty.png)
+
+---
+
+### Upload — Filled with DICOM Sequences
+![Upload Filled](upload_filled.png)
+
+---
+
+### Clinical Metadata Entry
+![Clinical Metadata](clinical_metadata.png)
+
+---
+
+### Pipeline Execution — 5 Agents Live
+![Pipeline Status](pipeline_status.png)
+
+---
+
+### Tumour Measurements Report
+![Report Measurements](report_measurements.png)
+
+---
+
+### RANO Classification & Longitudinal Trajectory
+![RANO Classification](report_rano.png)
+
+---
+
+### Clinical Literature RAG Context
+![RAG Context](report_rag.png)
+
+---
+
+### Generated PDF Report — Clinical Summary
+![PDF Report](pdf_report.png)
+
+---
+
+### Generated PDF Report — Longitudinal Trajectory Table
+![PDF Longitudinal](pdf_longitudinal.png)
+
 
 ---
 
