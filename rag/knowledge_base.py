@@ -75,6 +75,9 @@ def _diverse_passages(
 def query_knowledge_base(query: str) -> tuple[bool, list[RAGPassage], Optional[str]]:
     try:
         from rag.embeddings import embedding_model
+    except ImportError:
+        return False, [], "RAG unavailable: sentence-transformers not installed (lightweight deploy)"
+    try:
         vec = embedding_model.encode(query)
 
         try:
