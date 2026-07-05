@@ -35,6 +35,11 @@ class Settings(BaseSettings):
     # Fix R2 — Swagger UI only when DEBUG=true
     debug: bool = False
 
+    # Upload freeze flag — set UPLOADS_PAUSED=true in Render env vars to
+    # block new scan ingestion while keeping all existing read paths live.
+    # Flip to false (or delete the env var) to re-enable uploads.
+    uploads_paused: bool = False
+
     # RAG
     rag_min_relevance_score: float = 0.15
     rag_max_passages: int = 5

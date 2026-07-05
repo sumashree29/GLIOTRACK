@@ -37,6 +37,18 @@ _ALLOWED_EXTENSIONS = {".dcm", ".nii", ".gz", ".zip"}
 _MAX_FILE_BYTES     = 2 * 1024 * 1024 * 1024   # 2 GB — spec Section 3
 _CHUNK_SIZE         = 8 * 1024 * 1024           # 8 MB streaming chunks — spec Section 3
 
+_UPLOADS_PAUSED_MSG = (
+    "New scan uploads are temporarily paused for maintenance. "
+    "All existing scans, reports, and RAG retrieval remain fully accessible."
+)
+
+
+def _check_uploads_paused() -> None:
+    """Raise HTTP 503 when the UPLOADS_PAUSED env var is active."""
+    from app.core.config import settings
+    if settings.uploads_paused:
+        raise HTTPException(503, _UPLOADS_PAUSED_MSG)
+
 
 class ScanIn(BaseModel):
     patient_id: str
@@ -45,6 +57,7 @@ class ScanIn(BaseModel):
 
 @router.post("", status_code=201)
 def create_scan_record(body: ScanIn, request: Request, user=Depends(get_current_user)):
+    _check_uploads_paused()  # 503 when maintenance mode active
     api_limiter.check(get_client_ip(request))
     scan = create_scan(body.patient_id, body.scan_date.isoformat(), doctor_email=user["sub"])
     return scan
@@ -58,6 +71,7 @@ async def upload_sequence(
     request:  Request    = None,
     user=Depends(get_current_user),
 ):
+    _check_uploads_paused()  # 503 when maintenance mode active
     upload_limiter.check(get_client_ip(request))
 
     filename = file.filename or ""
@@ -107,6 +121,7 @@ async def trigger_pipeline(
     Clinical metadata is submitted here and stored on the scan row
     so Agent 2 can retrieve it during RANO classification.
     """
+    _check_uploads_paused()  # 503 when maintenance mode active
     pipeline_limiter.check(get_client_ip(request))
 
     scan = get_scan_by_id(scan_id)

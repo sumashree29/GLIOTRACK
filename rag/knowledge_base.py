@@ -36,9 +36,17 @@ class RAGPassage:
 @functools.lru_cache(maxsize=1)
 def _build_qdrant_client():
     from qdrant_client import QdrantClient
+    # timeout=60: default 5 s is too short for upsert batches over WAN
+    # (Qdrant Cloud eu-central → local machine latency under high load).
+    # Read queries are unaffected — they complete in <1 s.
     if settings.qdrant_api_key:
-        return QdrantClient(url=settings.qdrant_url, api_key=settings.qdrant_api_key)
-    return QdrantClient(url=settings.qdrant_url)
+        return QdrantClient(
+            url=settings.qdrant_url,
+            api_key=settings.qdrant_api_key,
+            timeout=60,
+            prefer_grpc=False,
+        )
+    return QdrantClient(url=settings.qdrant_url, timeout=60, prefer_grpc=False)
 
 
 def _clear_client_cache():
@@ -198,7 +206,10 @@ def upsert_passages(texts: list, vectors, payloads: list) -> tuple[int, int]:
         )
         upserted += 1
 
-    for i in range(0, len(points), 100):
-        client.upsert(collection_name=col, points=points[i:i + 100])
+    # Batch size 25: keeps each individual upsert call well under the 60 s
+    # timeout even on slow WAN links. 100 was causing timeouts over Qdrant Cloud.
+    BATCH = 25
+    for i in range(0, len(points), BATCH):
+        client.upsert(collection_name=col, points=points[i:i + BATCH])
 
     return upserted, skipped

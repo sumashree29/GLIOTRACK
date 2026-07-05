@@ -1,0 +1,37 @@
+# ── Excludes from Docker build context ────────────────────────────────────────
+# Keeping the build context small speeds up `docker build` and prevents
+# large files from accidentally landing in the image.
+
+# Modal workers — Agent 1 runs on Modal, never on Render
+modal_workers/
+
+# Next.js frontend — deployed on Vercel, not bundled into the FastAPI image
+frontend/
+
+# Knowledge base source PDFs — ingested offline, vectors live in Qdrant Cloud
+knowledge_base/
+
+# Git history
+.git/
+.gitignore
+
+# Local Python environments
+.venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local secrets — credentials are injected via Render env vars
+.env
+
+# Documentation images (not needed at runtime)
+*.png
+*.jpg
+*.jpeg
+
+# Development / CI artefacts
+*.md
+build.sh
+docker-compose.yml

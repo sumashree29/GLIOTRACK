@@ -3,7 +3,11 @@
 import React, { useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { CalendarDays, Upload, PlayCircle, CheckCircle2, Loader2, AlertCircle, ChevronRight } from "lucide-react";
+import { CalendarDays, Upload, PlayCircle, CheckCircle2, Loader2, AlertCircle, ChevronRight, PauseCircle } from "lucide-react";
+
+// Set NEXT_PUBLIC_UPLOADS_PAUSED=true on Vercel while Render is stabilising.
+// This shows the maintenance banner before the user even attempts an upload.
+const UPLOADS_PAUSED = process.env.NEXT_PUBLIC_UPLOADS_PAUSED === "true";
 
 import AuthGuard         from "@/components/layout/AuthGuard";
 import DashboardLayout   from "@/components/layout/DashboardLayout";
@@ -76,8 +80,14 @@ export default function UploadPage() {
       const scan = await createScan(patient_id, scanDate);
       setScanId(scan.scan_id); setStep(2);
     } catch (err: unknown) {
-      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      setStep1Error(detail ?? "Failed to create scan record.");
+      const status  = (err as { response?: { status?: number } })?.response?.status;
+      const detail  = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      // Surface maintenance mode 503 as a clear, actionable message
+      if (status === 503) {
+        setStep1Error(detail ?? "Uploads are temporarily paused. Existing scans and reports remain accessible.");
+      } else {
+        setStep1Error(detail ?? "Failed to create scan record.");
+      }
     } finally { setStep1Loading(false); }
   }
 
@@ -136,6 +146,25 @@ export default function UploadPage() {
     <AuthGuard>
       <DashboardLayout>
         <div className="max-w-[720px] mx-auto space-y-6">
+
+          {/* Maintenance banner — shown when uploads are paused */}
+          {UPLOADS_PAUSED && (
+            <div
+              className="flex items-start gap-3 px-4 py-3.5 rounded-xl border"
+              style={{ backgroundColor: "var(--amber-dim, #2d2200)", borderColor: "var(--amber, #f59e0b)" }}
+            >
+              <PauseCircle size={16} className="shrink-0 mt-0.5" style={{ color: "var(--amber, #f59e0b)" }} />
+              <div>
+                <p className="text-[13px] font-semibold" style={{ color: "var(--amber, #f59e0b)" }}>
+                  Uploads temporarily paused
+                </p>
+                <p className="text-[12px] mt-0.5" style={{ color: "var(--muted)" }}>
+                  New MRI scans cannot be submitted right now while we stabilise the backend.
+                  All existing scans, reports, and RAG-retrieved clinical context remain fully accessible.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Header */}
           <div>

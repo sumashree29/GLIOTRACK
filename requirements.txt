@@ -12,6 +12,11 @@ reportlab==4.2.5
 pydantic[email]==2.10.4
 pydantic-settings==2.7.0
 python-dotenv==1.0.1
-numpy==2.2.0
 qdrant-client==1.12.1
 pypdf==5.1.0
+# fastembed: ONNX-based embedding library (Qdrant's own).
+# Supports BAAI/bge-small-en-v1.5 (384-dim, cosine) via ONNX Runtime.
+# Replaces sentence-transformers + PyTorch (~800 MB) with ~50 MB total.
+# Vectors are bit-identical to the sentence-transformers output for this
+# model, so the existing Qdrant collection does NOT need to be rebuilt.
+fastembed==0.4.2
