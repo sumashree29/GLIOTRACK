@@ -5,8 +5,6 @@ services:
     dockerfilePath: ./Dockerfile
     plan: free
     envVars:
-      - key: PORT
-        value: "8000"
       # Freeze new uploads during backend stabilisation.
       # All read paths (existing scans, reports, RAG retrieval) remain live.
       # Delete this line or set to "false" to re-enable uploads.
