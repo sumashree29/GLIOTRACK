@@ -7,8 +7,7 @@ Fix CORS — OPTIONS method explicitly allowed.
 """
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import JSONResponse
 from app.api.routes import auth, patients, scans, reports, admin
 from app.core.config import settings
 import logging
@@ -100,13 +99,13 @@ app.include_router(scans.router)
 app.include_router(reports.router)
 app.include_router(admin.router)
 
-# Serve frontend — http://localhost:8000 opens the UI
-_frontend = os.path.join(os.path.dirname(__file__), "..", "frontend")
-if os.path.isdir(_frontend):
-    app.mount("/static", StaticFiles(directory=_frontend), name="static")
-
-    @app.get("/")
-    def serve_frontend():
-        return FileResponse(os.path.join(_frontend, "index.html"))
+# Root health-check endpoint.
+# Replaces the old conditional frontend-serving block (frontend/ is deployed
+# on Vercel and excluded from this Docker image via .dockerignore — trying to
+# serve it from here would crash with FileNotFoundError).
+# Render's health scanner hits GET / — this gives it a clean 200.
+@app.get("/")
+def root():
+    return JSONResponse({"status": "ok", "service": "gliotrack-api", "version": "1.0.0"})
 
 # FIX #7 — /health removed from here; it lives in admin router behind require_admin
