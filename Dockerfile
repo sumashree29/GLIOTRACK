@@ -29,4 +29,7 @@ RUN chown -R appuser:appuser /app
 USER appuser
 
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Shell form so $PORT is expanded at runtime by /bin/sh.
+# Render injects PORT at container start; exec form never sees it.
+# Falls back to 8000 when running locally without PORT set.
+CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
