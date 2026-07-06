@@ -259,16 +259,14 @@ def delete_scan(
     return {"message": f"Scan {scan_id} deleted."}
 
 @router.get("/{scan_id}/status")
-def get_status(scan_id: str, request: Request, user=Depends(get_current_user)):
+def get_status(scan_id: str, request: Request):
     api_limiter.check(get_client_ip(request))
     scan = get_scan_by_id(scan_id)
     if not scan:
         raise HTTPException(404, "Scan not found")
-    if scan.doctor_email != user["sub"]:
-        raise HTTPException(403, "Not authorised to view this scan")
     return {
         "scan_id":      scan_id,
         "status":       scan.status,
         "failed_stage": scan.failed_stage,
         "error":        scan.error,
-    }   
+    }

@@ -2,30 +2,21 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Users, Shield, LogOut, Brain, ChevronRight } from "lucide-react";
-import { getUser, clearSession, isAdmin } from "@/lib/auth";
+import { usePathname } from "next/navigation";
+import { LayoutDashboard, Users, Shield, Brain, ChevronRight } from "lucide-react";
 
 interface NavItem {
-  href: string; label: string; icon: React.ReactNode; adminOnly?: boolean;
+  href: string; label: string; icon: React.ReactNode;
 }
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: <LayoutDashboard size={15} /> },
   { href: "/patients",  label: "Patients",  icon: <Users size={15} /> },
-  { href: "/admin",     label: "Admin",     icon: <Shield size={15} />, adminOnly: true },
+  { href: "/admin",     label: "Admin",     icon: <Shield size={15} /> },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const router   = useRouter();
-  const user     = getUser();
-  const admin    = isAdmin();
-
-  function handleLogout() {
-    clearSession();
-    router.push("/login");
-  }
 
   return (
     <aside
@@ -49,7 +40,6 @@ export default function Sidebar() {
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-0.5">
         {NAV_ITEMS.map((item) => {
-          if (item.adminOnly && !admin) return null;
           const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
           return (
             <Link
@@ -69,41 +59,6 @@ export default function Sidebar() {
           );
         })}
       </nav>
-
-      {/* User section */}
-      <div className="shrink-0 p-3 space-y-1" style={{ borderTop: "1px solid var(--border)" }}>
-        <div className="px-2 py-1.5">
-          <p className="text-[11px] font-medium truncate leading-none" style={{ color: "var(--text)" }}>
-            {user?.email ?? "—"}
-          </p>
-          <span
-            className="inline-block mt-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase border"
-            style={{
-              backgroundColor: admin ? "var(--amber-dim)" : "var(--blue-dim)",
-              color: admin ? "var(--amber)" : "var(--blue)",
-              borderColor: admin ? "var(--amber)" : "var(--blue)",
-            }}
-          >
-            {admin ? "Admin" : "Doctor"}
-          </span>
-        </div>
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150"
-          style={{ color: "var(--muted)" }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.color = "var(--red)";
-            (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--red-dim)";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.color = "var(--muted)";
-            (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
-          }}
-        >
-          <LogOut size={14} />
-          Sign out
-        </button>
-      </div>
     </aside>
   );
 }

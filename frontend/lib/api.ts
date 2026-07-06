@@ -8,7 +8,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import axios, { type AxiosInstance, type AxiosProgressEvent } from "axios";
-import { getToken, clearSession } from "@/lib/auth";
+import { getToken } from "@/lib/auth";
 import type {
   LoginResponse,
   PatientRecord,
@@ -36,21 +36,14 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// On 401 → clear session + redirect (client side only)
+// Auth removed (2026-07-06): no longer redirect to /login on 401.
+// Read endpoints are public; a 401 (e.g. from an admin-only route) is
+// surfaced as a normal axios error to the caller.
 api.interceptors.response.use(
   (res) => res,
-  (err) => {
-    if (
-      typeof window !== "undefined" &&
-      err.response?.status === 401 &&
-      !window.location.pathname.startsWith("/login")
-    ) {
-      clearSession();
-      window.location.href = "/login";
-    }
-    return Promise.reject(err);
-  }
+  (err) => Promise.reject(err)
 );
+
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 export async function loginRequest(

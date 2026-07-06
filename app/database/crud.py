@@ -354,10 +354,27 @@ def get_patients_for_doctor(doctor_email: str) -> list:
     return [PatientRecord(**row) for row in r.data]
 
 
+def get_all_patients() -> list:
+    """Return all non-archived patients across all doctors (public read path)."""
+    r = _db().table("patients").select("*") \
+        .eq("archived", False) \
+        .order("created_at", desc=True) \
+        .execute()
+    return [PatientRecord(**row) for row in r.data]
+
+
 def get_patient_by_id(patient_id: str, doctor_email: str) -> Optional[PatientRecord]:
     r = _db().table("patients").select("*") \
         .eq("patient_id", patient_id) \
         .eq("assigned_doctor", doctor_email) \
+        .execute()
+    return PatientRecord(**r.data[0]) if r.data else None
+
+
+def get_patient_by_id_unscoped(patient_id: str) -> Optional[PatientRecord]:
+    """Return patient by ID regardless of doctor (public read path)."""
+    r = _db().table("patients").select("*") \
+        .eq("patient_id", patient_id) \
         .execute()
     return PatientRecord(**r.data[0]) if r.data else None
 
@@ -385,6 +402,15 @@ def restore_patient(patient_id: str, doctor_email: str) -> bool:
 def get_archived_patients(doctor_email: str) -> list:
     r = _db().table("patients").select("*") \
         .eq("assigned_doctor", doctor_email) \
+        .eq("archived", True) \
+        .order("archived_at", desc=True) \
+        .execute()
+    return [PatientRecord(**row) for row in r.data]
+
+
+def get_all_archived_patients() -> list:
+    """Return all archived patients across all doctors (public read path)."""
+    r = _db().table("patients").select("*") \
         .eq("archived", True) \
         .order("archived_at", desc=True) \
         .execute()
