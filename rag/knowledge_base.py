@@ -42,11 +42,12 @@ def _build_qdrant_client():
     if settings.qdrant_api_key:
         return QdrantClient(
             url=settings.qdrant_url,
+            port=443,
             api_key=settings.qdrant_api_key,
             timeout=60,
             prefer_grpc=False,
         )
-    return QdrantClient(url=settings.qdrant_url, timeout=60, prefer_grpc=False)
+    return QdrantClient(url=settings.qdrant_url, port=443, timeout=60, prefer_grpc=False)
 
 
 def _clear_client_cache():
