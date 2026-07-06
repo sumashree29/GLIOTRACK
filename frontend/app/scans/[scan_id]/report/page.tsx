@@ -174,6 +174,13 @@ export default function ReportPage() {
     setError(null);
     try {
       const data = await getScanReport(scan_id);
+      // Debug: log what /full returns for agent4 so we can confirm
+      // whether rag_available and passages are arriving correctly.
+      console.debug("[GlioTrack] /full agent4 response:", {
+        rag_available: data.agent4?.rag_available,
+        passage_count: data.agent4?.passages?.length ?? 0,
+        raw: data.agent4,
+      });
       setReport(data);
       setTimelinePoints([]);
 
