@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
-// Root "/" always redirects to login.
-// AuthGuard on /login will forward authenticated users to /dashboard.
+// Root "/" redirects directly to the dashboard — no login required.
+// Auth has been removed from all read endpoints (commit 7fa6cf7).
 export default function RootPage() {
-  redirect("/login");
+  redirect("/dashboard");
 }
