@@ -10,3 +10,9 @@ services:
       # Delete this line or set to "false" to re-enable uploads.
       - key: UPLOADS_PAUSED
         value: "true"
+      # CORS — comma-separated exact origins allowed to call this API.
+      # FastAPI CORSMiddleware does exact-match only (no glob/regex support).
+      # Vercel preview URLs are intentionally excluded: they change per commit
+      # and the API is public-read, so preview testing can be done via curl.
+      - key: ALLOWED_ORIGINS
+        value: "http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://localhost:8080,https://gliotrack-brain-tumour-analysis.vercel.app"
