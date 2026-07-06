@@ -81,6 +81,7 @@ def _diverse_passages(
 
 
 def query_knowledge_base(query: str) -> tuple[bool, list[RAGPassage], Optional[str]]:
+    import time
     try:
         from rag.embeddings import embedding_model
     except ImportError:
@@ -88,27 +89,47 @@ def query_knowledge_base(query: str) -> tuple[bool, list[RAGPassage], Optional[s
     try:
         vec = embedding_model.encode(query)
 
-        try:
-            client = _build_qdrant_client()
-        except Exception as conn_exc:
-            _clear_client_cache()
-            return False, [], f"Qdrant connection failed: {conn_exc}"
+        max_retries = 2
+        last_exc = None
+        hits = None
+        
+        for attempt in range(max_retries + 1):
+            try:
+                try:
+                    client = _build_qdrant_client()
+                except Exception as conn_exc:
+                    _clear_client_cache()
+                    raise Exception(f"Qdrant connection failed: {conn_exc}")
 
-        col  = settings.qdrant_collection_name
-        cols = [c.name for c in client.get_collections().collections]
-        if col not in cols:
-            return False, [], f"Collection '{col}' not found — run ingest_knowledge_base.py"
+                col  = settings.qdrant_collection_name
+                cols = [c.name for c in client.get_collections().collections]
+                if col not in cols:
+                    return False, [], f"Collection '{col}' not found — run ingest_knowledge_base.py"
 
-        # Fetch 5x the desired count so diversity selection has enough
-        # candidates from each source document to choose from
-        fetch_limit = settings.rag_max_passages * 5
+                # Fetch 5x the desired count so diversity selection has enough
+                # candidates from each source document to choose from
+                fetch_limit = settings.rag_max_passages * 5
 
-        hits = client.search(
-            collection_name=col,
-            query_vector=vec.tolist(),
-            limit=fetch_limit,
-            with_payload=True,
-        )
+                hits = client.search(
+                    collection_name=col,
+                    query_vector=vec.tolist(),
+                    limit=fetch_limit,
+                    with_payload=True,
+                )
+                
+                # Success
+                break
+            except Exception as e:
+                last_exc = e
+                logger.warning(
+                    "Qdrant query failed (attempt %d/%d). Exception: %r",
+                    attempt + 1, max_retries + 1, e
+                )
+                _clear_client_cache()
+                if attempt < max_retries:
+                    time.sleep(1.0)
+                else:
+                    raise Exception(f"Qdrant query failed after {max_retries + 1} attempts. Last error: {last_exc}")
 
         candidates: list[RAGPassage] = []
         for h in hits:
