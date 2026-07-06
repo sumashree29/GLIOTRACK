@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     r2_secret_access_key: str
     r2_bucket_name: str = "brain-tumour-scans"
 
-    qdrant_url: str = "https://27936c5e-c463-4f62-9f09-65896af1e8cb.eu-central-1-0.aws.cloud.qdrant.io"
+    qdrant_url: str = "https://c51fdc6d-19bb-4fa9-be46-024343ba935e.eu-central-1-0.aws.cloud.qdrant.io"
     qdrant_api_key: str = ""
     qdrant_collection_name: str = "clinical_guidelines"
 
