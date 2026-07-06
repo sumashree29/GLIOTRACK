@@ -178,9 +178,10 @@ export default function ReportPage() {
       // whether rag_available and passages are arriving correctly.
       console.debug("[GlioTrack] /full agent4 response:", {
         rag_available: data.agent4?.rag_available,
-        passage_count: data.agent4?.passages?.length ?? 0,
+        passage_count: data.agent4?.passages?.length ?? "undefined/null",
         raw: data.agent4,
       });
+      console.log("RAW REPORT FETCH:", JSON.stringify(data));
       setReport(data);
       setTimelinePoints([]);
 
